@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { BrainCircuit, Search, History } from 'lucide-react';
+import { BrainCircuit, Search, History, ArrowLeft, ArrowRight } from 'lucide-react';
 
 import type { GenerateFlashcardOutput } from '@/ai/flows/retrieve-up-to-date-information';
 import { getFlashcard } from '@/app/actions';
@@ -15,13 +15,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Flashcard } from '@/components/flashcard';
 import { FlashcardSkeleton } from '@/components/flashcard-skeleton';
 import { ThemeToggle } from '@/components/theme-toggle';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
 
 const formSchema = z.object({
   topic: z.string().min(2, {
@@ -34,6 +27,7 @@ export default function Home() {
   const [flashcards, setFlashcards] = useState<GenerateFlashcardOutput[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [recentTopics, setRecentTopics] = useState<string[]>([]);
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
   useEffect(() => {
     const storedTopics = localStorage.getItem('recentTopics');
@@ -56,6 +50,7 @@ export default function Home() {
   
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
+    setCurrentCardIndex(0); // Reset to show the latest card
     const result = await getFlashcard(values.topic);
     setIsLoading(false);
 
@@ -72,6 +67,8 @@ export default function Home() {
       });
     }
   }
+  
+  const currentCard = flashcards[currentCardIndex];
 
   return (
     <>
@@ -139,30 +136,38 @@ export default function Home() {
             </div>
           )}
 
-          <div className="w-full py-8">
+          <div className="w-full py-8 min-h-[500px]">
             {isLoading && (
               <div className="flex justify-center">
                 <FlashcardSkeleton />
               </div>
             )}
-            {!isLoading && flashcards.length > 0 && (
-              <Carousel className="w-full" opts={{ loop: false }}>
-                <CarouselContent>
-                  {flashcards.map((card, index) => (
-                    <CarouselItem key={index}>
-                      <div className="p-1">
-                        <Flashcard data={card} />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                {flashcards.length > 1 && (
-                  <>
-                    <CarouselPrevious />
-                    <CarouselNext />
-                  </>
+            {!isLoading && currentCard && (
+               <div className="relative">
+                {currentCardIndex < flashcards.length - 1 && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute top-4 left-4 z-10 h-7 w-7"
+                    onClick={() => setCurrentCardIndex(currentCardIndex + 1)}
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="sr-only">Back</span>
+                  </Button>
                 )}
-              </Carousel>
+                {currentCardIndex > 0 && (
+                   <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute top-4 right-4 z-10 h-7 w-7"
+                    onClick={() => setCurrentCardIndex(currentCardIndex - 1)}
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                    <span className="sr-only">View more</span>
+                  </Button>
+                )}
+                <Flashcard data={currentCard} />
+              </div>
             )}
           </div>
         </div>
