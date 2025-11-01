@@ -71,16 +71,19 @@ export default function Home() {
   const currentCard = flashcards[currentCardIndex];
 
   return (
-    <>
-      <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <BrainCircuit className="h-6 w-6 text-primary" />
-          <h1 className="text-xl font-bold tracking-tight">FlashLearn</h1>
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BrainCircuit className="h-6 w-6 text-primary" />
+            <h1 className="text-xl font-bold tracking-tight">FlashLearn</h1>
+          </div>
+          <ThemeToggle />
         </div>
-        <ThemeToggle />
       </header>
-      <main className="flex min-h-screen flex-col items-center justify-center p-4 pt-24">
-        <div className="w-full max-w-2xl space-y-8">
+      
+      <main className="flex flex-1 flex-col items-center p-4">
+        <div className="w-full max-w-2xl space-y-8 mt-10">
           <div className="text-center">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
               Learn Any Tech Topic Instantly
@@ -174,6 +177,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-    </>
+    </div>
   );
 }

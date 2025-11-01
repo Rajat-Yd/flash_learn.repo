@@ -8,7 +8,7 @@ import { getShortSummary } from '@/app/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { Copy, Download, Zap } from 'lucide-react';
+import { Copy, Download, Zap, Lightbulb, Puzzle, Rocket, GraduationCap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from './ui/skeleton';
 import { Badge } from './ui/badge';
@@ -33,7 +33,7 @@ function BoldParser({ text }: { text: string }) {
   );
 }
 
-const getGradientForTopic = (topic: string, theme: 'light' | 'dark'): string => {
+const getGradientForTopic = (topic: string, theme: 'light' | 'dark' | undefined): string => {
   const lowerTopic = topic.toLowerCase();
   
   const lightGradients = {
@@ -208,7 +208,7 @@ ${data.tip}
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <h3 className={cn("text-lg font-semibold mb-1 flex items-center gap-2", textHeaderColorClass)}>💡 Summary</h3>
+            <h3 className={cn("text-lg font-semibold mb-1 flex items-center gap-2", textHeaderColorClass)}><Lightbulb className="h-5 w-5" /> Summary</h3>
             <p className={textMutedColorClass}><BoldParser text={data.summary} /></p>
           </div>
           
@@ -227,7 +227,7 @@ ${data.tip}
           
           <Separator className={separatorClass} />
           <div>
-            <h3 className={cn("text-lg font-semibold mb-2 flex items-center gap-2", textHeaderColorClass)}>🧩 Key Concepts</h3>
+            <h3 className={cn("text-lg font-semibold mb-2 flex items-center gap-2", textHeaderColorClass)}><Puzzle className="h-5 w-5" /> Key Concepts</h3>
             <ul className="space-y-2">
               {data.keyConcepts.map((concept, index) => (
                 <li key={index} className="flex items-start gap-3">
@@ -239,12 +239,12 @@ ${data.tip}
           </div>
           <Separator className={separatorClass} />
           <div>
-            <h3 className={cn("text-lg font-semibold mb-1 flex items-center gap-2", textHeaderColorClass)}>🚀 Real-World Example</h3>
+            <h3 className={cn("text-lg font-semibold mb-1 flex items-center gap-2", textHeaderColorClass)}><Rocket className="h-5 w-5" /> Real-World Example</h3>
             <p className={textMutedColorClass}><BoldParser text={data.example} /></p>
           </div>
           <Separator className={separatorClass} />
           <div>
-            <h3 className={cn("text-lg font-semibold mb-1 flex items-center gap-2", textHeaderColorClass)}>🎓 Learning Tip</h3>
+            <h3 className={cn("text-lg font-semibold mb-1 flex items-center gap-2", textHeaderColorClass)}><GraduationCap className="h-5 w-5" /> Learning Tip</h3>
             <p className={textMutedColorClass}><BoldParser text={data.tip} /></p>
           </div>
         </CardContent>
