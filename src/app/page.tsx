@@ -143,30 +143,32 @@ export default function Home() {
               </div>
             )}
             {!isLoading && currentCard && (
-               <div className="relative">
-                {currentCardIndex > 0 && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="absolute top-4 left-4 z-10 h-7 w-7"
-                    onClick={() => setCurrentCardIndex(currentCardIndex - 1)}
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    <span className="sr-only">Back (Newer)</span>
-                  </Button>
-                )}
+               <div className="relative flex items-center justify-center">
                 {currentCardIndex < flashcards.length - 1 && (
                    <Button
                     variant="outline"
                     size="icon"
-                    className="absolute top-4 right-4 z-10 h-7 w-7"
+                    className="absolute right-full mr-4 z-10 h-8 w-8"
                     onClick={() => setCurrentCardIndex(currentCardIndex + 1)}
                   >
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowLeft className="h-4 w-4" />
                     <span className="sr-only">View more (Older)</span>
                   </Button>
                 )}
-                <Flashcard data={currentCard} />
+                <div className="w-full max-w-2xl">
+                  <Flashcard data={currentCard} />
+                </div>
+                {currentCardIndex > 0 && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute left-full ml-4 z-10 h-8 w-8"
+                    onClick={() => setCurrentCardIndex(currentCardIndex - 1)}
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                    <span className="sr-only">Back (Newer)</span>
+                  </Button>
+                )}
               </div>
             )}
           </div>
