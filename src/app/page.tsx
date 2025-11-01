@@ -1,3 +1,106 @@
+'use client';
+
+import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { BrainCircuit, Search } from 'lucide-react';
+
+import type { GenerateFlashcardOutput } from '@/ai/flows/retrieve-up-to-date-information';
+import { getFlashcard } from '@/app/actions';
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { Flashcard } from '@/components/flashcard';
+import { FlashcardSkeleton } from '@/components/flashcard-skeleton';
+import { ThemeToggle } from '@/components/theme-toggle';
+
+const formSchema = z.object({
+  topic: z.string().min(2, {
+    message: 'Topic must be at least 2 characters.',
+  }),
+});
+
 export default function Home() {
-  return <></>;
+  const { toast } = useToast();
+  const [flashcard, setFlashcard] = useState<GenerateFlashcardOutput | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      topic: '',
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+    setFlashcard(null);
+    const result = await getFlashcard(values.topic);
+    setIsLoading(false);
+
+    if (result.success) {
+      setFlashcard(result.data);
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'An error occurred',
+        description: result.error,
+      });
+    }
+  }
+
+  return (
+    <>
+      <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <BrainCircuit className="h-6 w-6 text-primary" />
+          <h1 className="text-xl font-bold tracking-tight">FlashLearn</h1>
+        </div>
+        <ThemeToggle />
+      </header>
+      <main className="flex min-h-screen flex-col items-center justify-center p-4 pt-24">
+        <div className="w-full max-w-2xl space-y-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
+              Learn Any Tech Topic Instantly
+            </h2>
+            <p className="text-muted-foreground md:text-xl/relaxed">
+              Enter a topic and our AI will generate a detailed flashcard for you.
+            </p>
+          </div>
+          <div className="px-4">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
+                <FormField
+                  control={form.control}
+                  name="topic"
+                  render={({ field }) => (
+                    <FormItem className="flex-grow">
+                      <FormControl>
+                        <div className="relative">
+                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                           <Input placeholder="e.g. 'Kubernetes' or 'Prompt Engineering'" className="pl-10" {...field} />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? 'Generating...' : 'Generate'}
+                </Button>
+              </form>
+            </Form>
+          </div>
+
+          <div className="flex justify-center py-8">
+            {isLoading && <FlashcardSkeleton />}
+            {flashcard && <Flashcard data={flashcard} />}
+          </div>
+        </div>
+      </main>
+    </>
+  );
 }

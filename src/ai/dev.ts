@@ -1,1 +1,5 @@
-// Flows will be imported for their side effects in this file.
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/generate-informative-flashcard.ts';
+import '@/ai/flows/retrieve-up-to-date-information.ts';
