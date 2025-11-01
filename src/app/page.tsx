@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { BrainCircuit, Search } from 'lucide-react';
+import { BrainCircuit, Search, History } from 'lucide-react';
 
 import type { GenerateFlashcardOutput } from '@/ai/flows/retrieve-up-to-date-information';
 import { getFlashcard } from '@/app/actions';
@@ -26,6 +26,14 @@ export default function Home() {
   const { toast } = useToast();
   const [flashcard, setFlashcard] = useState<GenerateFlashcardOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [recentTopics, setRecentTopics] = useState<string[]>([]);
+
+  useEffect(() => {
+    const storedTopics = localStorage.getItem('recentTopics');
+    if (storedTopics) {
+      setRecentTopics(JSON.parse(storedTopics));
+    }
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -34,6 +42,11 @@ export default function Home() {
     },
   });
 
+  const handleRecentTopicSearch = (topic: string) => {
+    form.setValue('topic', topic);
+    onSubmit({ topic });
+  };
+  
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     setFlashcard(null);
@@ -42,6 +55,9 @@ export default function Home() {
 
     if (result.success) {
       setFlashcard(result.data);
+      const updatedTopics = [values.topic, ...recentTopics.filter(t => t !== values.topic)].slice(0, 5);
+      setRecentTopics(updatedTopics);
+      localStorage.setItem('recentTopics', JSON.stringify(updatedTopics));
     } else {
       toast({
         variant: 'destructive',
@@ -89,11 +105,33 @@ export default function Home() {
                   )}
                 />
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? 'Generating...' : 'Generate'}
+                  {isLoading ? '✨ Generating...' : 'Generate'}
                 </Button>
               </form>
             </Form>
           </div>
+
+          {recentTopics.length > 0 && (
+            <div className="px-4 space-y-3">
+              <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <History className="h-4 w-4" />
+                Recent Topics
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {recentTopics.map(topic => (
+                  <Button 
+                    key={topic} 
+                    variant="outline" 
+                    size="sm"
+                    className="text-xs h-auto py-1 px-2"
+                    onClick={() => handleRecentTopicSearch(topic)}
+                  >
+                    {topic}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-center py-8">
             {isLoading && <FlashcardSkeleton />}

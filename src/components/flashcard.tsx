@@ -7,11 +7,25 @@ import type { GenerateFlashcardOutput } from '@/ai/flows/retrieve-up-to-date-inf
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, Copy, Download } from 'lucide-react';
+import { Copy, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface FlashcardProps {
   data: GenerateFlashcardOutput;
+}
+
+function BoldParser({ text }: { text: string }) {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={index} className="font-bold text-primary">{part.slice(2, -2)}</strong>;
+        }
+        return part;
+      })}
+    </>
+  );
 }
 
 export function Flashcard({ data }: FlashcardProps) {
@@ -29,6 +43,8 @@ export function Flashcard({ data }: FlashcardProps) {
     try {
       const canvas = await html2canvas(cardRef.current, {
         scale: 3, // Increased scale for better quality
+        useCORS: true,
+        backgroundColor: null,
       });
       const imgData = canvas.toDataURL('image/png');
       
@@ -64,7 +80,7 @@ Summary:
 ${data.summary}
 
 Key Concepts:
-${data.keyConcepts.join('\n- ')}
+${data.keyConcepts.map(c => `- ${c.replace(/\*\*/g, '')}`).join('\n')}
 
 Real-World Example:
 ${data.example}
@@ -96,30 +112,30 @@ ${data.tip}
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <h3 className="text-lg font-semibold text-primary">Summary</h3>
-            <p className="text-muted-foreground">{data.summary}</p>
+            <h3 className="text-lg font-semibold text-primary mb-1 flex items-center gap-2">💡 Summary</h3>
+            <p className="text-muted-foreground"><BoldParser text={data.summary} /></p>
           </div>
           <Separator />
           <div>
-            <h3 className="text-lg font-semibold text-primary">Key Concepts</h3>
-            <ul className="mt-2 space-y-2">
+            <h3 className="text-lg font-semibold text-primary mb-2 flex items-center gap-2">🧩 Key Concepts</h3>
+            <ul className="space-y-2">
               {data.keyConcepts.map((concept, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <CheckCircle2 className="h-5 w-5 mt-0.5 text-green-500 flex-shrink-0" />
-                  <span className="text-muted-foreground">{concept}</span>
+                <li key={index} className="flex items-start gap-3">
+                  <span className="text-green-500 mt-1 flex-shrink-0">✓</span>
+                  <span className="text-muted-foreground"><BoldParser text={concept} /></span>
                 </li>
               ))}
             </ul>
           </div>
           <Separator />
           <div>
-            <h3 className="text-lg font-semibold text-primary">Real-World Example</h3>
-            <p className="text-muted-foreground">{data.example}</p>
+            <h3 className="text-lg font-semibold text-primary mb-1 flex items-center gap-2">🚀 Real-World Example</h3>
+            <p className="text-muted-foreground"><BoldParser text={data.example} /></p>
           </div>
           <Separator />
           <div>
-            <h3 className="text-lg font-semibold text-primary">Learning Tip</h3>
-            <p className="text-muted-foreground">{data.tip}</p>
+            <h3 className="text-lg font-semibold text-primary mb-1 flex items-center gap-2">🎓 Learning Tip</h3>
+            <p className="text-muted-foreground"><BoldParser text={data.tip} /></p>
           </div>
         </CardContent>
         <CardFooter data-id="flashcard-footer" className="justify-end gap-2">
