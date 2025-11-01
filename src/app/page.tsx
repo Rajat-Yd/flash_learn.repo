@@ -16,6 +16,7 @@ import { Flashcard } from '@/components/flashcard';
 import { FlashcardSkeleton } from '@/components/flashcard-skeleton';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Footer } from '@/components/footer';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   topic: z.string().min(2, {
@@ -128,7 +129,7 @@ export default function Home() {
             </Form>
           </div>
 
-          {recentTopics.length > 0 && !isLoading && (
+          {recentTopics.length > 0 && !isLoading && !currentCard && (
             <div className="px-4 space-y-3">
               <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <History className="h-4 w-4" />
@@ -150,7 +151,7 @@ export default function Home() {
             </div>
           )}
 
-          <div className="w-full py-8 min-h-[500px]">
+          <div className={cn("w-full py-8", (isLoading || currentCard) && "min-h-[500px]")}>
             {isLoading && (
               <div className="flex justify-center">
                 <FlashcardSkeleton />
