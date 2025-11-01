@@ -28,6 +28,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [recentTopics, setRecentTopics] = useState<string[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [isNewCard, setIsNewCard] = useState(false);
 
   useEffect(() => {
     const storedTopics = localStorage.getItem('recentTopics');
@@ -35,6 +36,14 @@ export default function Home() {
       setRecentTopics(JSON.parse(storedTopics));
     }
   }, []);
+  
+  useEffect(() => {
+    if (isNewCard) {
+      const timer = setTimeout(() => setIsNewCard(false), 2000); // Animation duration
+      return () => clearTimeout(timer);
+    }
+  }, [isNewCard]);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,6 +60,7 @@ export default function Home() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     setCurrentCardIndex(0); // Reset to show the latest card
+    setIsNewCard(true); // Trigger animation for new card
     const result = await getFlashcard(values.topic);
     setIsLoading(false);
 
@@ -159,7 +169,7 @@ export default function Home() {
                   </Button>
                 )}
                 <div className="w-full max-w-2xl">
-                  <Flashcard data={currentCard} />
+                  <Flashcard data={currentCard} isNew={isNewCard && currentCardIndex === 0} />
                 </div>
                 {currentCardIndex > 0 && (
                   <Button

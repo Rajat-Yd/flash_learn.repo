@@ -86,3 +86,21 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .glow-on-load {
+    animation: glow-pulse 2s ease-out;
+  }
+
+  @keyframes glow-pulse {
+    0% {
+      box-shadow: 0 0 0px 0px hsl(var(--primary) / 0.7);
+    }
+    50% {
+      box-shadow: 0 0 20px 5px hsl(var(--primary) / 0.5);
+    }
+    100% {
+      box-shadow: 0 0 0px 0px hsl(var(--primary) / 0.7);
+    }
+  }
+}

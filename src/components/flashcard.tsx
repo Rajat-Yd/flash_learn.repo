@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import type { GenerateFlashcardOutput } from '@/ai/flows/retrieve-up-to-date-information';
@@ -8,7 +8,7 @@ import { getShortSummary, getDetailedExplanation } from '@/app/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { Copy, Download, Zap, Lightbulb, Puzzle, Rocket, GraduationCap, BookOpen } from 'lucide-react';
+import { Copy, Download, Zap, Lightbulb, Puzzle, Rocket, GraduationCap, BookOpen, BrainCircuit, Cloud, Database, Code, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from './ui/skeleton';
 import { Badge } from './ui/badge';
@@ -17,6 +17,7 @@ import { useTheme } from '@/components/theme-provider';
 
 interface FlashcardProps {
   data: GenerateFlashcardOutput;
+  isNew?: boolean;
 }
 
 function MarkdownParser({ text }: { text: string }) {
@@ -51,6 +52,29 @@ function MarkdownParser({ text }: { text: string }) {
     </>
   );
 }
+
+const getTopicIcon = (topic: string): React.ReactElement => {
+  const lowerTopic = topic.toLowerCase();
+  const iconProps = { className: 'h-6 w-6 mr-2' };
+
+  if (lowerTopic.includes('ai') || lowerTopic.includes('agent') || lowerTopic.includes('deep learning') || lowerTopic.includes('machine learning')) {
+    return <BrainCircuit {...iconProps} />;
+  }
+  if (lowerTopic.includes('cloud') || lowerTopic.includes('aws') || lowerTopic.includes('azure') || lowerTopic.includes('gcp') || lowerTopic.includes('kubernetes')) {
+    return <Cloud {...iconProps} />;
+  }
+  if (lowerTopic.includes('data') || lowerTopic.includes('database') || lowerTopic.includes('sql')) {
+    return <Database {...iconProps} />;
+  }
+  if (lowerTopic.includes('react') || lowerTopic.includes('frontend') || lowerTopic.includes('javascript') || lowerTopic.includes('next.js') || lowerTopic.includes('python') || lowerTopic.includes('backend')) {
+    return <Code {...iconProps} />;
+  }
+  if (lowerTopic.includes('security') || lowerTopic.includes('cyber')) {
+    return <Shield {...iconProps} />;
+  }
+  return <BrainCircuit {...iconProps} />;
+};
+
 
 const getGradientForTopic = (topic: string, theme: 'light' | 'dark' | undefined): string => {
   const lowerTopic = topic.toLowerCase();
@@ -99,7 +123,7 @@ const getGradientForTopic = (topic: string, theme: 'light' | 'dark' | undefined)
 };
 
 
-export function Flashcard({ data }: FlashcardProps) {
+export function Flashcard({ data, isNew = false }: FlashcardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isShortening, setIsShortening] = useState(false);
@@ -219,6 +243,7 @@ ${data.tip}
   };
   
   const gradientClass = getGradientForTopic(data.topicName, theme);
+  const TopicIcon = getTopicIcon(data.topicName);
 
   const textColorClass = theme === 'dark' ? 'text-white' : 'text-white';
   const textMutedColorClass = theme === 'dark' ? 'text-white/80' : 'text-white/80';
@@ -236,10 +261,13 @@ ${data.tip}
 
   return (
     <>
-      <Card ref={cardRef} className={cn("w-full max-w-2xl animate-in fade-in-50 duration-500 border-0 bg-gradient-to-br", gradientClass, textColorClass)}>
+      <Card ref={cardRef} className={cn("w-full max-w-2xl animate-in fade-in-50 duration-500 border-0 bg-gradient-to-br", gradientClass, textColorClass, isNew && "glow-on-load")}>
         <CardHeader>
           <div className="flex justify-between items-start">
-            <CardTitle className={cn("text-2xl font-bold", textColorClass)}>{data.topicName}</CardTitle>
+            <div className='flex items-center'>
+              {TopicIcon}
+              <CardTitle className={cn("text-2xl font-bold", textColorClass)}>{data.topicName}</CardTitle>
+            </div>
             {data.difficulty && (
               <Badge variant="secondary" className={cn("backdrop-blur-sm", badgeClass)}>
                 {data.difficulty}
