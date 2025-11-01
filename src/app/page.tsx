@@ -144,26 +144,26 @@ export default function Home() {
             )}
             {!isLoading && currentCard && (
                <div className="relative">
-                {currentCardIndex < flashcards.length - 1 && (
+                {currentCardIndex > 0 && (
                   <Button
                     variant="outline"
                     size="icon"
                     className="absolute top-4 left-4 z-10 h-7 w-7"
-                    onClick={() => setCurrentCardIndex(currentCardIndex + 1)}
+                    onClick={() => setCurrentCardIndex(currentCardIndex - 1)}
                   >
                     <ArrowLeft className="h-4 w-4" />
-                    <span className="sr-only">Back</span>
+                    <span className="sr-only">Back (Newer)</span>
                   </Button>
                 )}
-                {currentCardIndex > 0 && (
+                {currentCardIndex < flashcards.length - 1 && (
                    <Button
                     variant="outline"
                     size="icon"
                     className="absolute top-4 right-4 z-10 h-7 w-7"
-                    onClick={() => setCurrentCardIndex(currentCardIndex - 1)}
+                    onClick={() => setCurrentCardIndex(currentCardIndex + 1)}
                   >
                     <ArrowRight className="h-4 w-4" />
-                    <span className="sr-only">View more</span>
+                    <span className="sr-only">View more (Older)</span>
                   </Button>
                 )}
                 <Flashcard data={currentCard} />
