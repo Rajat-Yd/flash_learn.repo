@@ -19,15 +19,34 @@ interface FlashcardProps {
   data: GenerateFlashcardOutput;
 }
 
-function BoldParser({ text }: { text: string }) {
-  const parts = text.split(/(\*\*.*?\*\*)/g);
+function MarkdownParser({ text }: { text: string }) {
+  // Split by newlines to create paragraphs
+  const paragraphs = text.split('\n').filter(p => p.trim() !== '');
+
   return (
     <>
-      {parts.map((part, index) => {
-        if (part.startsWith('**') && part.endsWith('**')) {
-          return <strong key={index} className="font-bold">{part.slice(2, -2)}</strong>;
-        }
-        return part;
+      {paragraphs.map((paragraph, pIndex) => {
+        // Split each paragraph by bold markers
+        const parts = paragraph.split(/(\*\*.*?\*\*)/g);
+        return (
+          <p key={pIndex} className="mb-2 last:mb-0">
+            {parts.map((part, index) => {
+              if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={index}>{part.slice(2, -2)}</strong>;
+              }
+              // Handle unordered lists
+              if (part.trim().startsWith('- ')) {
+                return (
+                  <span key={index} className="flex">
+                    <span className="mr-2"></span>
+                    <span>{part.trim().substring(2)}</span>
+                  </span>
+                );
+              }
+              return part;
+            })}
+          </p>
+        );
       })}
     </>
   );
@@ -231,7 +250,7 @@ ${data.tip}
         <CardContent className="space-y-6">
           <div>
             <h3 className={cn("text-lg font-semibold mb-1 flex items-center gap-2", textHeaderColorClass)}><Lightbulb className="h-5 w-5" /> Summary</h3>
-            <p className={textMutedColorClass}><BoldParser text={data.summary} /></p>
+            <p className={textMutedColorClass}><MarkdownParser text={data.summary} /></p>
           </div>
           
           {(isShortening || shortSummary) && (
@@ -243,7 +262,7 @@ ${data.tip}
                   <Skeleton className="h-4 w-5/6 bg-white/20" />
                 </div>
               )}
-              {shortSummary && <p className={cn("text-sm", textMutedColorClass)}><BoldParser text={shortSummary} /></p>}
+              {shortSummary && <p className={cn("text-sm", textMutedColorClass)}><MarkdownParser text={shortSummary} /></p>}
             </div>
           )}
           
@@ -254,7 +273,7 @@ ${data.tip}
               {data.keyConcepts.map((concept, index) => (
                 <li key={index} className="flex items-start gap-3">
                   <span className={cn("mt-1 flex-shrink-0", textHeaderColorClass)}>✓</span>
-                  <span className={textMutedColorClass}><BoldParser text={concept} /></span>
+                  <span className={textMutedColorClass}><MarkdownParser text={concept} /></span>
                 </li>
               ))}
             </ul>
@@ -262,12 +281,12 @@ ${data.tip}
           <Separator className={separatorClass} />
           <div>
             <h3 className={cn("text-lg font-semibold mb-1 flex items-center gap-2", textHeaderColorClass)}><Rocket className="h-5 w-5" /> Real-World Example</h3>
-            <p className={textMutedColorClass}><BoldParser text={data.example} /></p>
+            <p className={textMutedColorClass}><MarkdownParser text={data.example} /></p>
           </div>
           <Separator className={separatorClass} />
           <div>
             <h3 className={cn("text-lg font-semibold mb-1 flex items-center gap-2", textHeaderColorClass)}><GraduationCap className="h-5 w-5" /> Learning Tip</h3>
-            <p className={textMutedColorClass}><BoldParser text={data.tip} /></p>
+            <p className={textMutedColorClass}><MarkdownParser text={data.tip} /></p>
           </div>
 
           {(isExpanding || detailedExplanation) && (
@@ -284,7 +303,7 @@ ${data.tip}
                     <Skeleton className="h-4 w-4/6 bg-white/20" />
                   </div>
                 )}
-                {detailedExplanation && <div className={cn("text-sm prose-p:text-white/80 prose-strong:text-white", textMutedColorClass)}><BoldParser text={detailedExplanation} /></div>}
+                {detailedExplanation && <div className={cn("text-sm", textMutedColorClass)}><MarkdownParser text={detailedExplanation} /></div>}
               </div>
             </>
           )}

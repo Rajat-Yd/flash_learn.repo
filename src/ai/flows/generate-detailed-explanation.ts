@@ -17,7 +17,7 @@ const GenerateDetailedExplanationInputSchema = z.object({
 export type GenerateDetailedExplanationInput = z.infer<typeof GenerateDetailedExplanationInputSchema>;
 
 const GenerateDetailedExplanationOutputSchema = z.object({
-  explanation: z.string().describe('A detailed, multi-paragraph explanation of the topic, suitable for someone who wants to learn more.'),
+  explanation: z.string().describe('A detailed, multi-paragraph explanation of the topic, suitable for someone who wants to learn more. Use Markdown for formatting (e.g., paragraphs, bolding, lists).'),
 });
 export type GenerateDetailedExplanationOutput = z.infer<typeof GenerateDetailedExplanationOutputSchema>;
 
@@ -31,7 +31,7 @@ const prompt = ai.definePrompt({
   name: 'generateDetailedExplanationPrompt',
   input: {schema: GenerateDetailedExplanationInputSchema},
   output: {schema: GenerateDetailedExplanationOutputSchema},
-  prompt: `You are an AI learning assistant. A user wants to learn more about the topic: "{{topic}}". Provide a detailed, multi-paragraph explanation. Go deeper than a simple summary. Explain the context, how it works, and its importance. Use markdown for formatting, like bolding key terms.`,
+  prompt: `You are an AI learning assistant. A user wants to learn more about the topic: "{{topic}}". Provide a detailed, multi-paragraph explanation. Go deeper than a simple summary. Explain the context, how it works, and its importance. Use markdown for formatting, like paragraphs, bolding key terms, and lists.`,
 });
 
 const generateDetailedExplanationFlow = ai.defineFlow(
