@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Flashcard } from '@/components/flashcard';
 import { FlashcardSkeleton } from '@/components/flashcard-skeleton';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { Footer } from '@/components/footer';
 
 const formSchema = z.object({
   topic: z.string().min(2, {
@@ -92,7 +93,7 @@ export default function Home() {
         </div>
       </header>
       
-      <main className="flex flex-1 flex-col items-center p-4">
+      <main className="flex-1 flex flex-col items-center p-4">
         <div className="w-full max-w-2xl space-y-8 mt-10">
           <div className="text-center">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">
@@ -187,6 +188,7 @@ export default function Home() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
