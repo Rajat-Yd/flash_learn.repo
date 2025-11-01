@@ -4,11 +4,11 @@ import { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import type { GenerateFlashcardOutput } from '@/ai/flows/retrieve-up-to-date-information';
-import { getShortSummary } from '@/app/actions';
+import { getShortSummary, getDetailedExplanation } from '@/app/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { Copy, Download, Zap, Lightbulb, Puzzle, Rocket, GraduationCap } from 'lucide-react';
+import { Copy, Download, Zap, Lightbulb, Puzzle, Rocket, GraduationCap, BookOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from './ui/skeleton';
 import { Badge } from './ui/badge';
@@ -85,6 +85,8 @@ export function Flashcard({ data }: FlashcardProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isShortening, setIsShortening] = useState(false);
   const [shortSummary, setShortSummary] = useState<string | null>(null);
+  const [isExpanding, setIsExpanding] = useState(false);
+  const [detailedExplanation, setDetailedExplanation] = useState<string | null>(null);
   const { toast } = useToast();
   const { theme } = useTheme();
 
@@ -176,6 +178,26 @@ ${data.tip}
       });
     }
   };
+
+  const handleShowMore = async () => {
+    if (detailedExplanation) {
+      setDetailedExplanation(null); // Toggle to hide
+      return;
+    }
+    setIsExpanding(true);
+    const result = await getDetailedExplanation(data.topicName);
+    setIsExpanding(false);
+
+    if (result.success) {
+      setDetailedExplanation(result.data.explanation);
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'An error occurred',
+        description: result.error,
+      });
+    }
+  };
   
   const gradientClass = getGradientForTopic(data.topicName, theme);
 
@@ -190,7 +212,7 @@ ${data.tip}
   const downloadButtonClass = theme === 'dark'
     ? 'bg-white/90 text-black hover:bg-white'
     : 'bg-white text-black hover:bg-gray-200';
-  const shortenContainerClass = theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-white/20 bg-white/10';
+  const generatedContentContainerClass = theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-white/20 bg-white/10';
 
 
   return (
@@ -213,7 +235,7 @@ ${data.tip}
           </div>
           
           {(isShortening || shortSummary) && (
-            <div className={cn("space-y-2 rounded-lg border p-4 backdrop-blur-sm", shortenContainerClass)}>
+            <div className={cn("space-y-2 rounded-lg border p-4 backdrop-blur-sm", generatedContentContainerClass)}>
               <h4 className={cn("text-md font-semibold flex items-center gap-2", textHeaderColorClass)}>Quick Summary</h4>
               {isShortening && (
                 <div className="space-y-2">
@@ -247,11 +269,35 @@ ${data.tip}
             <h3 className={cn("text-lg font-semibold mb-1 flex items-center gap-2", textHeaderColorClass)}><GraduationCap className="h-5 w-5" /> Learning Tip</h3>
             <p className={textMutedColorClass}><BoldParser text={data.tip} /></p>
           </div>
+
+          {(isExpanding || detailedExplanation) && (
+            <>
+              <Separator className={separatorClass} />
+              <div className={cn("space-y-2 rounded-lg border p-4 backdrop-blur-sm", generatedContentContainerClass)}>
+                <h3 className={cn("text-lg font-semibold flex items-center gap-2", textHeaderColorClass)}><BookOpen className="h-5 w-5" /> Deeper Dive</h3>
+                {isExpanding && (
+                  <div className="space-y-2 pt-2">
+                    <Skeleton className="h-4 w-full bg-white/20" />
+                    <Skeleton className="h-4 w-full bg-white/20" />
+                    <Skeleton className="h-4 w-5/6 bg-white/20" />
+                    <Skeleton className="h-4 w-full mt-4 bg-white/20" />
+                    <Skeleton className="h-4 w-4/6 bg-white/20" />
+                  </div>
+                )}
+                {detailedExplanation && <div className={cn("text-sm prose-p:text-white/80 prose-strong:text-white", textMutedColorClass)}><BoldParser text={detailedExplanation} /></div>}
+              </div>
+            </>
+          )}
+
         </CardContent>
         <CardFooter data-id="flashcard-footer" className="flex-wrap justify-end gap-2">
             <Button onClick={handleShorten} variant="outline" className={buttonClass} disabled={isShortening}>
                 <Zap className="mr-2 h-4 w-4" />
                 {isShortening ? 'Summarizing...' : 'Make it shorter'}
+            </Button>
+            <Button onClick={handleShowMore} variant="outline" className={buttonClass} disabled={isExpanding}>
+                <BookOpen className="mr-2 h-4 w-4" />
+                {isExpanding ? 'Loading...' : (detailedExplanation ? 'Show Less' : 'Show More')}
             </Button>
             <Button onClick={handleCopy} variant="outline" className={buttonClass}>
                 <Copy className="mr-2 h-4 w-4" />

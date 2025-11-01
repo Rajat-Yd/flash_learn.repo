@@ -2,6 +2,7 @@
 
 import { generateFlashcard, type GenerateFlashcardOutput } from '@/ai/flows/retrieve-up-to-date-information';
 import { generateShortSummary, type GenerateShortSummaryOutput } from '@/ai/flows/generate-short-summary';
+import { generateDetailedExplanation, type GenerateDetailedExplanationOutput } from '@/ai/flows/generate-detailed-explanation';
 
 type ActionResult<T> = 
   | { success: true; data: T }
@@ -34,5 +35,20 @@ export async function getShortSummary(topic: string): Promise<ActionResult<Gener
     } catch (error) {
         console.error('Error generating short summary:', error);
         return { success: false, error: 'Failed to generate short summary.' };
+    }
+}
+
+
+export async function getDetailedExplanation(topic: string): Promise<ActionResult<GenerateDetailedExplanationOutput>> {
+    if (!topic || topic.trim().length === 0) {
+        return { success: false, error: 'Topic cannot be empty.' };
+    }
+
+    try {
+        const detailedExplanation = await generateDetailedExplanation({ topic });
+        return { success: true, data: detailedExplanation };
+    } catch (error) {
+        console.error('Error generating detailed explanation:', error);
+        return { success: false, error: 'Failed to generate detailed explanation.' };
     }
 }
