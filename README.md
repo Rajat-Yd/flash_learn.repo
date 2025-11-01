@@ -1,5 +1,2 @@
-# Firebase Studio
-
-This is a NextJS starter in Firebase Studio.
-
-To get started, take a look at src/app/page.tsx.
+# Flash Learn
+<a href="https://flash-learn-rj.netlify.app/"> Linke🔗</a>
