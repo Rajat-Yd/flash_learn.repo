@@ -7,7 +7,8 @@ import type { GenerateFlashcardOutput } from '@/ai/flows/retrieve-up-to-date-inf
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, Download } from 'lucide-react';
+import { CheckCircle2, Copy, Download } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface FlashcardProps {
   data: GenerateFlashcardOutput;
@@ -16,18 +17,18 @@ interface FlashcardProps {
 export function Flashcard({ data }: FlashcardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const { toast } = useToast();
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
     setIsDownloading(true);
 
-    // Hide the button during capture
     const footer = cardRef.current.querySelector('[data-id="flashcard-footer"]');
     if (footer instanceof HTMLElement) footer.style.display = 'none';
 
     try {
       const canvas = await html2canvas(cardRef.current, {
-        scale: 2, // Higher scale for better quality
+        scale: 3, // Increased scale for better quality
       });
       const imgData = canvas.toDataURL('image/png');
       
@@ -42,11 +43,49 @@ export function Flashcard({ data }: FlashcardProps) {
 
     } catch (error) {
       console.error('Error generating PDF', error);
+      toast({
+        variant: 'destructive',
+        title: 'PDF Generation Failed',
+        description: 'There was an issue creating the PDF file.',
+      });
     } finally {
-        // Show the button again
       if (footer instanceof HTMLElement) footer.style.display = 'flex';
       setIsDownloading(false);
     }
+  };
+
+  const handleCopy = () => {
+    if (!data) return;
+
+    const contentToCopy = `
+Topic: ${data.topicName}
+
+Summary:
+${data.summary}
+
+Key Concepts:
+${data.keyConcepts.join('\n- ')}
+
+Real-World Example:
+${data.example}
+
+Learning Tip:
+${data.tip}
+    `.trim();
+
+    navigator.clipboard.writeText(contentToCopy).then(() => {
+      toast({
+        title: 'Copied to Clipboard',
+        description: 'The flashcard content has been copied.',
+      });
+    }, (err) => {
+      console.error('Could not copy text: ', err);
+      toast({
+        variant: 'destructive',
+        title: 'Copy Failed',
+        description: 'There was an issue copying the content.',
+      });
+    });
   };
 
   return (
@@ -83,7 +122,11 @@ export function Flashcard({ data }: FlashcardProps) {
             <p className="text-muted-foreground">{data.tip}</p>
           </div>
         </CardContent>
-        <CardFooter data-id="flashcard-footer" className="justify-end">
+        <CardFooter data-id="flashcard-footer" className="justify-end gap-2">
+            <Button onClick={handleCopy} variant="outline">
+                <Copy className="mr-2 h-4 w-4" />
+                Copy
+            </Button>
             <Button onClick={handleDownload} disabled={isDownloading}>
                 <Download className="mr-2 h-4 w-4" />
                 {isDownloading ? 'Downloading...' : 'Download PDF'}
