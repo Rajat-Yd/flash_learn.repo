@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Copy, Download, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from './ui/skeleton';
+import { Badge } from './ui/badge';
+import { cn } from '@/lib/utils';
 
 interface FlashcardProps {
   data: GenerateFlashcardOutput;
@@ -22,13 +24,37 @@ function BoldParser({ text }: { text: string }) {
     <>
       {parts.map((part, index) => {
         if (part.startsWith('**') && part.endsWith('**')) {
-          return <strong key={index} className="font-bold text-primary">{part.slice(2, -2)}</strong>;
+          return <strong key={index} className="font-bold">{part.slice(2, -2)}</strong>;
         }
         return part;
       })}
     </>
   );
 }
+
+const getGradientForTopic = (topic: string): string => {
+  const lowerTopic = topic.toLowerCase();
+  if (lowerTopic.includes('ai') || lowerTopic.includes('agent') || lowerTopic.includes('deep learning')) {
+    return 'from-indigo-500 to-purple-600';
+  }
+  if (lowerTopic.includes('cloud') || lowerTopic.includes('aws') || lowerTopic.includes('azure') || lowerTopic.includes('gcp') || lowerTopic.includes('kubernetes')) {
+    return 'from-blue-500 to-teal-500';
+  }
+  if (lowerTopic.includes('data') || lowerTopic.includes('database') || lowerTopic.includes('sql')) {
+    return 'from-orange-400 to-yellow-500';
+  }
+  if (lowerTopic.includes('react') || lowerTopic.includes('frontend') || lowerTopic.includes('javascript') || lowerTopic.includes('next.js')) {
+    return 'from-sky-400 to-cyan-400';
+  }
+  if (lowerTopic.includes('security') || lowerTopic.includes('cyber')) {
+    return 'from-red-500 to-rose-500';
+  }
+  if (lowerTopic.includes('python') || lowerTopic.includes('backend')) {
+    return 'from-green-500 to-lime-600';
+  }
+  return 'from-slate-600 to-slate-700'; // Default gradient
+};
+
 
 export function Flashcard({ data }: FlashcardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -79,6 +105,7 @@ export function Flashcard({ data }: FlashcardProps) {
 
     const contentToCopy = `
 Topic: ${data.topicName}
+Difficulty: ${data.difficulty}
 
 Summary:
 ${data.summary}
@@ -124,66 +151,74 @@ ${data.tip}
       });
     }
   };
-
+  
+  const gradientClass = getGradientForTopic(data.topicName);
 
   return (
     <>
-      <Card ref={cardRef} className="w-full max-w-2xl animate-in fade-in-50 duration-500">
+      <Card ref={cardRef} className={cn("w-full max-w-2xl animate-in fade-in-50 duration-500 text-white border-0 bg-gradient-to-br", gradientClass)}>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">{data.topicName}</CardTitle>
+          <div className="flex justify-between items-start">
+            <CardTitle className="text-2xl font-bold text-white">{data.topicName}</CardTitle>
+            {data.difficulty && (
+              <Badge variant="secondary" className="bg-white/20 text-white backdrop-blur-sm">
+                {data.difficulty}
+              </Badge>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <h3 className="text-lg font-semibold text-primary mb-1 flex items-center gap-2">💡 Summary</h3>
-            <p className="text-muted-foreground"><BoldParser text={data.summary} /></p>
+            <h3 className="text-lg font-semibold text-white/90 mb-1 flex items-center gap-2">💡 Summary</h3>
+            <p className="text-white/80"><BoldParser text={data.summary} /></p>
           </div>
           
           {(isShortening || shortSummary) && (
-            <div className="space-y-2 rounded-lg border bg-secondary/50 p-4">
-              <h4 className="text-md font-semibold text-primary flex items-center gap-2">Quick Summary</h4>
+            <div className="space-y-2 rounded-lg border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
+              <h4 className="text-md font-semibold text-white/90 flex items-center gap-2">Quick Summary</h4>
               {isShortening && (
                 <div className="space-y-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-full bg-white/20" />
+                  <Skeleton className="h-4 w-5/6 bg-white/20" />
                 </div>
               )}
-              {shortSummary && <p className="text-muted-foreground text-sm"><BoldParser text={shortSummary} /></p>}
+              {shortSummary && <p className="text-white/80 text-sm"><BoldParser text={shortSummary} /></p>}
             </div>
           )}
           
-          <Separator />
+          <Separator className="bg-white/20" />
           <div>
-            <h3 className="text-lg font-semibold text-primary mb-2 flex items-center gap-2">🧩 Key Concepts</h3>
+            <h3 className="text-lg font-semibold text-white/90 mb-2 flex items-center gap-2">🧩 Key Concepts</h3>
             <ul className="space-y-2">
               {data.keyConcepts.map((concept, index) => (
                 <li key={index} className="flex items-start gap-3">
-                  <span className="text-green-500 mt-1 flex-shrink-0">✓</span>
-                  <span className="text-muted-foreground"><BoldParser text={concept} /></span>
+                  <span className="text-white/90 mt-1 flex-shrink-0">✓</span>
+                  <span className="text-white/80"><BoldParser text={concept} /></span>
                 </li>
               ))}
             </ul>
           </div>
-          <Separator />
+          <Separator className="bg-white/20" />
           <div>
-            <h3 className="text-lg font-semibold text-primary mb-1 flex items-center gap-2">🚀 Real-World Example</h3>
-            <p className="text-muted-foreground"><BoldParser text={data.example} /></p>
+            <h3 className="text-lg font-semibold text-white/90 mb-1 flex items-center gap-2">🚀 Real-World Example</h3>
+            <p className="text-white/80"><BoldParser text={data.example} /></p>
           </div>
-          <Separator />
+          <Separator className="bg-white/20" />
           <div>
-            <h3 className="text-lg font-semibold text-primary mb-1 flex items-center gap-2">🎓 Learning Tip</h3>
-            <p className="text-muted-foreground"><BoldParser text={data.tip} /></p>
+            <h3 className="text-lg font-semibold text-white/90 mb-1 flex items-center gap-2">🎓 Learning Tip</h3>
+            <p className="text-white/80"><BoldParser text={data.tip} /></p>
           </div>
         </CardContent>
         <CardFooter data-id="flashcard-footer" className="flex-wrap justify-end gap-2">
-            <Button onClick={handleShorten} variant="outline" disabled={isShortening}>
+            <Button onClick={handleShorten} variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20" disabled={isShortening}>
                 <Zap className="mr-2 h-4 w-4" />
                 {isShortening ? 'Summarizing...' : 'Make it shorter'}
             </Button>
-            <Button onClick={handleCopy} variant="outline">
+            <Button onClick={handleCopy} variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
                 <Copy className="mr-2 h-4 w-4" />
                 Copy
             </Button>
-            <Button onClick={handleDownload} disabled={isDownloading}>
+            <Button onClick={handleDownload} className="bg-white text-black hover:bg-gray-200" disabled={isDownloading}>
                 <Download className="mr-2 h-4 w-4" />
                 {isDownloading ? 'Downloading...' : 'Download PDF'}
             </Button>

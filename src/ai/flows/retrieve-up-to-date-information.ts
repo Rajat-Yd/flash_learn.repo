@@ -21,6 +21,7 @@ const GenerateFlashcardOutputSchema = z.object({
   keyConcepts: z.array(z.string()).describe('An array of key concepts/subtopics.'),
   example: z.string().describe('A real-world example or use case of the topic.'),
   tip: z.string().describe('A short learning tip or key takeaway.'),
+  difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced']).describe('The difficulty level of the topic.'),
 });
 export type GenerateFlashcardOutput = z.infer<typeof GenerateFlashcardOutputSchema>;
 
@@ -32,7 +33,7 @@ const prompt = ai.definePrompt({
   name: 'flashcardPrompt',
   input: {schema: GenerateFlashcardInputSchema},
   output: {schema: GenerateFlashcardOutputSchema},
-  prompt: `You are an AI learning assistant with access to real-time information. Generate a short flashcard to teach someone about the topic: "{{topic}}".\nInclude:\n- A 2-3 line summary\n- 3-5 key points (as bullet points)\n- One real-world example or application\n- One short takeaway or tip\nKeep it concise and easy to understand for a tech professional. Use your access to real-time information to provide up-to-date and accurate details. Format key points as bullet points. Use markdown to bold important keywords.`,
+  prompt: `You are an AI learning assistant with access to real-time information. Generate a short flashcard to teach someone about the topic: "{{topic}}".\nInclude:\n- A 2-3 line summary\n- 3-5 key points (as bullet points)\n- One real-world example or application\n- One short takeaway or tip\n- A difficulty rating (Beginner, Intermediate, or Advanced).\nKeep it concise and easy to understand for a tech professional. Use your access to real-time information to provide up-to-date and accurate details. Format key points as bullet points. Use markdown to bold important keywords.`,
 });
 
 const generateFlashcardFlow = ai.defineFlow(
