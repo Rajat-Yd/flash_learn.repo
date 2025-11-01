@@ -15,6 +15,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Flashcard } from '@/components/flashcard';
 import { FlashcardSkeleton } from '@/components/flashcard-skeleton';
 import { ThemeToggle } from '@/components/theme-toggle';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
 const formSchema = z.object({
   topic: z.string().min(2, {
@@ -24,7 +31,7 @@ const formSchema = z.object({
 
 export default function Home() {
   const { toast } = useToast();
-  const [flashcard, setFlashcard] = useState<GenerateFlashcardOutput | null>(null);
+  const [flashcards, setFlashcards] = useState<GenerateFlashcardOutput[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [recentTopics, setRecentTopics] = useState<string[]>([]);
 
@@ -49,12 +56,11 @@ export default function Home() {
   
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    setFlashcard(null);
     const result = await getFlashcard(values.topic);
     setIsLoading(false);
 
     if (result.success) {
-      setFlashcard(result.data);
+      setFlashcards(prevFlashcards => [result.data, ...prevFlashcards].slice(0, 3));
       const updatedTopics = [values.topic, ...recentTopics.filter(t => t !== values.topic)].slice(0, 5);
       setRecentTopics(updatedTopics);
       localStorage.setItem('recentTopics', JSON.stringify(updatedTopics));
@@ -111,7 +117,7 @@ export default function Home() {
             </Form>
           </div>
 
-          {recentTopics.length > 0 && (
+          {recentTopics.length > 0 && !isLoading && (
             <div className="px-4 space-y-3">
               <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <History className="h-4 w-4" />
@@ -133,9 +139,31 @@ export default function Home() {
             </div>
           )}
 
-          <div className="flex justify-center py-8">
-            {isLoading && <FlashcardSkeleton />}
-            {flashcard && <Flashcard data={flashcard} />}
+          <div className="w-full py-8">
+            {isLoading && (
+              <div className="flex justify-center">
+                <FlashcardSkeleton />
+              </div>
+            )}
+            {!isLoading && flashcards.length > 0 && (
+              <Carousel className="w-full" opts={{ loop: false }}>
+                <CarouselContent>
+                  {flashcards.map((card, index) => (
+                    <CarouselItem key={index}>
+                      <div className="p-1">
+                        <Flashcard data={card} />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                {flashcards.length > 1 && (
+                  <>
+                    <CarouselPrevious />
+                    <CarouselNext />
+                  </>
+                )}
+              </Carousel>
+            )}
           </div>
         </div>
       </main>
