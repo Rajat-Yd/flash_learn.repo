@@ -278,7 +278,7 @@ ${data.tip}
         <CardContent className="space-y-6">
           <div>
             <h3 className={cn("text-lg font-semibold mb-1 flex items-center gap-2", textHeaderColorClass)}><Lightbulb className="h-5 w-5" /> Summary</h3>
-            <p className={textMutedColorClass}><MarkdownParser text={data.summary} /></p>
+            <div className={textMutedColorClass}><MarkdownParser text={data.summary} /></div>
           </div>
           
           {(isShortening || shortSummary) && (
@@ -290,7 +290,7 @@ ${data.tip}
                   <Skeleton className="h-4 w-5/6 bg-white/20" />
                 </div>
               )}
-              {shortSummary && <p className={cn("text-sm", textMutedColorClass)}><MarkdownParser text={shortSummary} /></p>}
+              {shortSummary && <div className={cn("text-sm", textMutedColorClass)}><MarkdownParser text={shortSummary} /></div>}
             </div>
           )}
           
@@ -301,7 +301,7 @@ ${data.tip}
               {data.keyConcepts.map((concept, index) => (
                 <li key={index} className="flex items-start gap-3">
                   <span className={cn("mt-1 flex-shrink-0", textHeaderColorClass)}>✓</span>
-                  <span className={textMutedColorClass}><MarkdownParser text={concept} /></span>
+                  <div className={textMutedColorClass}><MarkdownParser text={concept} /></div>
                 </li>
               ))}
             </ul>
@@ -309,12 +309,12 @@ ${data.tip}
           <Separator className={separatorClass} />
           <div>
             <h3 className={cn("text-lg font-semibold mb-1 flex items-center gap-2", textHeaderColorClass)}><Rocket className="h-5 w-5" /> Real-World Example</h3>
-            <p className={textMutedColorClass}><MarkdownParser text={data.example} /></p>
+            <div className={textMutedColorClass}><MarkdownParser text={data.example} /></div>
           </div>
           <Separator className={separatorClass} />
           <div>
             <h3 className={cn("text-lg font-semibold mb-1 flex items-center gap-2", textHeaderColorClass)}><GraduationCap className="h-5 w-5" /> Learning Tip</h3>
-            <p className={textMutedColorClass}><MarkdownParser text={data.tip} /></p>
+            <div className={textMutedColorClass}><MarkdownParser text={data.tip} /></div>
           </div>
 
           {(isExpanding || detailedExplanation) && (
