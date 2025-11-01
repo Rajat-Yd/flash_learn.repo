@@ -4,11 +4,13 @@ import { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import type { GenerateFlashcardOutput } from '@/ai/flows/retrieve-up-to-date-information';
+import { getShortSummary } from '@/app/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { Copy, Download } from 'lucide-react';
+import { Copy, Download, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from './ui/skeleton';
 
 interface FlashcardProps {
   data: GenerateFlashcardOutput;
@@ -31,6 +33,8 @@ function BoldParser({ text }: { text: string }) {
 export function Flashcard({ data }: FlashcardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isShortening, setIsShortening] = useState(false);
+  const [shortSummary, setShortSummary] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleDownload = async () => {
@@ -42,7 +46,7 @@ export function Flashcard({ data }: FlashcardProps) {
 
     try {
       const canvas = await html2canvas(cardRef.current, {
-        scale: 3, // Increased scale for better quality
+        scale: 3, 
         useCORS: true,
         backgroundColor: null,
       });
@@ -104,6 +108,24 @@ ${data.tip}
     });
   };
 
+  const handleShorten = async () => {
+    setIsShortening(true);
+    setShortSummary(null);
+    const result = await getShortSummary(data.topicName);
+    setIsShortening(false);
+
+    if (result.success) {
+      setShortSummary(result.data.summary);
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'An error occurred',
+        description: result.error,
+      });
+    }
+  };
+
+
   return (
     <>
       <Card ref={cardRef} className="w-full max-w-2xl animate-in fade-in-50 duration-500">
@@ -115,6 +137,20 @@ ${data.tip}
             <h3 className="text-lg font-semibold text-primary mb-1 flex items-center gap-2">💡 Summary</h3>
             <p className="text-muted-foreground"><BoldParser text={data.summary} /></p>
           </div>
+          
+          {(isShortening || shortSummary) && (
+            <div className="space-y-2 rounded-lg border bg-secondary/50 p-4">
+              <h4 className="text-md font-semibold text-primary flex items-center gap-2">Quick Summary</h4>
+              {isShortening && (
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                </div>
+              )}
+              {shortSummary && <p className="text-muted-foreground text-sm"><BoldParser text={shortSummary} /></p>}
+            </div>
+          )}
+          
           <Separator />
           <div>
             <h3 className="text-lg font-semibold text-primary mb-2 flex items-center gap-2">🧩 Key Concepts</h3>
@@ -138,7 +174,11 @@ ${data.tip}
             <p className="text-muted-foreground"><BoldParser text={data.tip} /></p>
           </div>
         </CardContent>
-        <CardFooter data-id="flashcard-footer" className="justify-end gap-2">
+        <CardFooter data-id="flashcard-footer" className="flex-wrap justify-end gap-2">
+            <Button onClick={handleShorten} variant="outline" disabled={isShortening}>
+                <Zap className="mr-2 h-4 w-4" />
+                {isShortening ? 'Summarizing...' : 'Make it shorter'}
+            </Button>
             <Button onClick={handleCopy} variant="outline">
                 <Copy className="mr-2 h-4 w-4" />
                 Copy
